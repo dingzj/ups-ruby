@@ -17,6 +17,7 @@ module UPS
     class BuilderBase
       include Ox
       include Exceptions
+      MAX_REFERENCE_CNT = 2
 
       attr_accessor :document,
                     :root,
@@ -148,20 +149,47 @@ module UPS
           org << element_with_value('Description', 'Rate')
           org << package_weight(opts[:weight], opts[:unit])
           org << package_dimensions(opts[:dimensions]) if opts[:dimensions]
+          if opts[:references] && opts[:references].length > 0
+            cnt = 0
+            opts[:references].each do |ref|
+              next if ref[:code].empty? || ref[:value].empty?
+              org << Element.new('ReferenceNumber').tap do |elem|
+                elem << element_with_value('Code', ref[:code])
+                elem << element_with_value('Value', ref[:value])
+              end
+              cnt += 1
+              break if cnt >= MAX_REFERENCE_CNT
+            end
+          end
         end
+  
       end
 
       # Adds a PaymentInformation section to the XML document being built
       #
       # @param [String] ship_number The UPS Shipper Number
       # @return [void]
-      def add_payment_information(ship_number)
+      def add_payment_information(ship_number, third_party_ops={})
         shipment_root << Element.new('PaymentInformation').tap do |payment|
-          payment << Element.new('Prepaid').tap do |prepaid|
-            prepaid << Element.new('BillShipper').tap do |bill_shipper|
-              bill_shipper << element_with_value('AccountNumber', ship_number)
+          if third_party_ops.empty?
+            payment << Element.new('Prepaid').tap do |prepaid|
+              prepaid << Element.new('BillShipper').tap do |bill_shipper|
+                bill_shipper << element_with_value('AccountNumber', ship_number)
+              end
             end
-          end
+          else
+            payment << Element.new('BillThirdParty').tap do |third_party|
+              third_party << Element.new('BillThirdPartyShipper').tap { |bill_3rd_party|
+                bill_3rd_party << element_with_value('AccountNumber', third_party_ops[:account_number])
+                bill_3rd_party << Element.new('ThirdParty').tap do |third_party_shipper|
+                  third_party_shipper << Element.new('Address').tap { |party_shipper_address|
+                    party_shipper_address << element_with_value('PostalCode', third_party_ops[:postal_code])
+                    party_shipper_address << element_with_value('CountryCode', third_party_ops[:country_code] || 'US')
+                  }
+                end
+              }
+            end
+          end # if else end
         end
       end
 

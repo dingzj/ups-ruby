@@ -89,9 +89,9 @@ response = server.ship do |shipment_builder|
     postal_code: 'WC2H 8AG',
     country: 'GB'
   shipment_builder.add_package weight: '0.5',
-    unit: 'KGS'
+    unit: 'KGS', references: [{code: 'PO', value: 'purchase order num#'}]
   shipment_builder.add_description 'White coffee mug'
-  shipment_builder.add_payment_information 'ACCOUNT_NUMBER'
+  shipment_builder.add_payment_information 'ACCOUNT_NUMBER', {account_number: '3rd_party_account_number', postal_code: '3rd_party_postal_code', country_code: '3rd_party_country_code'}
   shipment_builder.add_service '65' # returned in rates response
 end
 ```
@@ -191,6 +191,10 @@ response.form_graphic_extension
 ## Running the tests
 
 After installing dependencies with `bundle install`, you can run the unit tests using `rake`.
+
+## Updates
+* Added options to pay with 3rd party
+* Added options to add reference information on the package
 
 ## Contributers
 
