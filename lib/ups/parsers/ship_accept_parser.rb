@@ -42,6 +42,23 @@ module UPS
         [UPS::Models::PackageResult.new(package_results)]
       end
 
+      # In case of multiple packages per shipment, return all images, paths, and tracking numbers
+      def all_tracking_numbers
+        packages.map {|e| e.tracking_number}
+      end
+
+      def all_label_graphic_images
+        packages.map {|e| e.label_graphic_image}
+      end
+
+      def all_label_graphic_image_paths
+        packages.map {|e| e.label_graphic_image.path}
+      end
+
+      def all_label_html_images
+        packages.map {|e| e.label_html_image}
+      end
+
       private
 
       def form_graphic

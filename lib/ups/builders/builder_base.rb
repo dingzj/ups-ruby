@@ -146,7 +146,7 @@ module UPS
       def add_package(opts = {})
         shipment_root << Element.new('Package').tap do |org|
           org << packaging_type
-          org << element_with_value('Description', 'Rate')
+          org << element_with_value('Description', opts[:package_desc] || 'Rate')
           org << package_weight(opts[:weight], opts[:unit])
           org << package_dimensions(opts[:dimensions]) if opts[:dimensions]
           if opts[:references] && opts[:references].length > 0
